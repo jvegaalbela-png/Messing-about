@@ -111,10 +111,9 @@
     .bpm-row {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
+      justify-content: space-between;
       margin-bottom: 1rem;
-      padding: 0 2.5rem;
+      padding: 0 1.5rem;
     }
 
     .bpm-center {
@@ -123,11 +122,10 @@
     }
 
     .bpm-number {
-      font-size: 4.5rem;
+      font-size: clamp(2.6rem, 11vw, 4.5rem);
       font-weight: 700;
       color: #ffffff;
       cursor: text;
-      min-width: 5ch;
       display: inline-block;
       text-align: center;
       line-height: 1;
