@@ -653,7 +653,7 @@
     .form-slash { color: #383868; font-size: 1rem; }
 
     .form-unit-select {
-      width: 52px;
+      width: 60px;
       background: #1a1a38;
       border: 1px solid #30305a;
       color: #b0b0ff;
@@ -694,6 +694,32 @@
       color: #404068;
       text-align: center;
       min-height: 1rem;
+    }
+
+    /* ─── Sound Library ──────────────────────────────────────── */
+    .sound-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+
+    .btn-sound {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.65rem 0.4rem;
+    }
+
+    .sound-icon { font-size: 1.15rem; line-height: 1; }
+    .sound-label { font-size: 0.65rem; letter-spacing: 0.05em; color: #606090; }
+    .btn-sound.active .sound-label { color: #a0a0d0; }
+    .sound-note {
+      font-size: 0.62rem;
+      color: #383860;
+      text-align: center;
+      margin-top: 0.5rem;
+      font-style: italic;
     }
   </style>
 </head>
@@ -749,12 +775,9 @@
     </div>
     <div class="custom-sig">
       <span class="custom-sig-label">Custom:</span>
-      <input type="number" id="beats-input" min="1" max="16" value="4">
+      <input type="number" id="beats-input" min="1" max="32" value="4">
       <span class="custom-sig-slash">/</span>
-      <select id="unit-select">
-        <option value="4" selected>4</option>
-        <option value="8">8</option>
-      </select>
+      <select id="unit-select"></select>
     </div>
   </div>
 
@@ -779,6 +802,26 @@
         <span class="sub-label">Quadruplet</span>
       </button>
     </div>
+  </div>
+
+  <!-- Sound Library -->
+  <div class="card">
+    <div class="section-label">Sound</div>
+    <div class="sound-grid">
+      <button class="btn btn-sound active" data-sound="electronic">
+        <span class="sound-icon">∿</span>
+        <span class="sound-label">Electronic</span>
+      </button>
+      <button class="btn btn-sound" data-sound="clave">
+        <span class="sound-icon">▮</span>
+        <span class="sound-label">Clave</span>
+      </button>
+      <button class="btn btn-sound" data-sound="voice">
+        <span class="sound-icon">♬</span>
+        <span class="sound-label">Voice</span>
+      </button>
+    </div>
+    <div class="sound-note" id="voice-note" style="display:none">Voice timing is best-effort — depends on your device's speech engine</div>
   </div>
 
   <!-- Beat Grid -->
@@ -828,7 +871,7 @@
         </div>
         <div class="adv-row">
           <span class="adv-label">Silence</span>
-          <input type="range" id="gap-silent-slider" min="1" max="15" value="2">
+          <input type="range" id="gap-silent-slider" min="1" max="16" value="2">
           <span class="adv-value" id="gap-silent-val">2</span>
           <span class="adv-unit">measures</span>
         </div>
@@ -905,6 +948,10 @@
     form: [],   // [{ beats, unit, states[] }]
   };
 
+  // Sound library
+  let soundMode = 'electronic'; // 'electronic' | 'clave' | 'voice'
+  let selectedVoice = null;
+
   // Scheduler-side advanced state (runs SCHEDULE_AHEAD_S ahead of audio time)
   let advGapPhase = 'play';   // 'play' | 'silent'
   let advGapCount = 0;
@@ -929,47 +976,100 @@
     return audioCtx;
   }
 
-  function scheduleClick(time, type) {
-    // type: 'accent' | 'beat' | 'sub' | 'mute'
+  // ─── Sound Library ───────────────────────────────────────────────────────────
+  function scheduleClick(time, type, beatNum) {
     if (type === 'mute') return;
+    if (soundMode === 'clave')      { scheduleClave(time, type); return; }
+    if (soundMode === 'voice')      { scheduleVoice(time, type, beatNum); return; }
+    scheduleElectronic(time, type);
+  }
 
+  function scheduleElectronic(time, type) {
     const ctx = getAudioCtx();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const filter = ctx.createBiquadFilter();
-
-    osc.connect(filter);
-    filter.connect(gain);
-    gain.connect(ctx.destination);
-
+    osc.connect(filter); filter.connect(gain); gain.connect(ctx.destination);
     filter.type = 'bandpass';
-
     if (type === 'accent') {
-      osc.frequency.value = 1050;
-      filter.frequency.value = 1050;
-      filter.Q.value = 0.6;
+      osc.frequency.value = 1050; filter.frequency.value = 1050; filter.Q.value = 0.6;
       gain.gain.setValueAtTime(0, time);
       gain.gain.linearRampToValueAtTime(1.0, time + 0.001);
       gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
     } else if (type === 'beat') {
-      osc.frequency.value = 800;
-      filter.frequency.value = 800;
-      filter.Q.value = 0.5;
+      osc.frequency.value = 800; filter.frequency.value = 800; filter.Q.value = 0.5;
       gain.gain.setValueAtTime(0, time);
       gain.gain.linearRampToValueAtTime(0.75, time + 0.001);
       gain.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
     } else {
-      // subdivision
-      osc.frequency.value = 1600;
-      filter.frequency.value = 1600;
-      filter.Q.value = 1.2;
+      osc.frequency.value = 1600; filter.frequency.value = 1600; filter.Q.value = 1.2;
       gain.gain.setValueAtTime(0, time);
       gain.gain.linearRampToValueAtTime(0.3, time + 0.001);
       gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
     }
+    osc.start(time); osc.stop(time + 0.2);
+  }
 
-    osc.start(time);
-    osc.stop(time + 0.2);
+  function scheduleClave(time, type) {
+    const ctx = getAudioCtx();
+    const freq  = type === 'accent' ? 1500 : type === 'beat' ? 1150 : 2000;
+    const vol   = type === 'accent' ? 1.1  : type === 'beat' ? 0.8  : 0.35;
+    const decay = type === 'sub'    ? 0.018 : type === 'accent' ? 0.055 : 0.04;
+
+    // Noise burst through bandpass — the "body" of the clave
+    const len = Math.ceil(ctx.sampleRate * (decay * 4));
+    const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d   = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (len * 0.22));
+    const noise = ctx.createBufferSource();
+    noise.buffer = buf;
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass'; bp.frequency.value = freq; bp.Q.value = 5;
+    const ng = ctx.createGain(); ng.gain.value = vol * 0.55;
+    noise.connect(bp); bp.connect(ng); ng.connect(ctx.destination);
+    noise.start(time);
+
+    // Tonal transient — the "click" of the clave
+    const osc = ctx.createOscillator();
+    osc.frequency.setValueAtTime(freq * 1.3, time);
+    osc.frequency.exponentialRampToValueAtTime(freq * 0.75, time + decay * 0.4);
+    const og = ctx.createGain();
+    og.gain.setValueAtTime(0, time);
+    og.gain.linearRampToValueAtTime(vol * 0.9, time + 0.0008);
+    og.gain.exponentialRampToValueAtTime(0.001, time + decay);
+    osc.connect(og); og.connect(ctx.destination);
+    osc.start(time); osc.stop(time + decay + 0.01);
+  }
+
+  function scheduleVoice(time, type, beatNum) {
+    // Subdivisions are silent in voice mode; only count main beats
+    if (type === 'sub') return;
+    if (typeof speechSynthesis === 'undefined') return;
+    const ctx = getAudioCtx();
+    const msUntil = (time - ctx.currentTime) * 1000 - 130; // fire 130ms early for TTS latency
+    setTimeout(() => {
+      if (!state.isPlaying) return;
+      const u = new SpeechSynthesisUtterance(String(beatNum));
+      if (selectedVoice) u.voice = selectedVoice;
+      u.rate  = Math.min(2.0, Math.max(0.8, state.bpm / 72));
+      u.pitch = 1.15;
+      u.volume = type === 'accent' ? 1.0 : 0.75;
+      speechSynthesis.speak(u);
+    }, Math.max(0, msUntil));
+  }
+
+  function initVoices() {
+    if (typeof speechSynthesis === 'undefined') return;
+    const pick = () => {
+      const vs = speechSynthesis.getVoices();
+      selectedVoice =
+        vs.find(v => /samantha|victoria|karen|kate|susan|fiona|zira/i.test(v.name)) ||
+        vs.find(v => v.lang.startsWith('en-') && /female/i.test(v.name)) ||
+        vs.find(v => v.lang.startsWith('en-')) ||
+        vs[0] || null;
+    };
+    pick();
+    speechSynthesis.addEventListener('voiceschanged', pick);
   }
 
   function getAdvConfig() {
@@ -1006,7 +1106,7 @@
         if (Math.random() < adv.randomMutePct / 100) clickType = 'mute';
       }
 
-      scheduleClick(time, clickType);
+      scheduleClick(time, clickType, beat + 1);
       pendingVisuals.push({
         beat, sub, time, clickType,
         formIdx: advFormIdx,
@@ -1166,8 +1266,20 @@
   });
 
   // ─── Time Signature ───────────────────────────────────────────────────────────
+  function populateUnitSelect(id, currentVal) {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    sel.innerHTML = '';
+    for (let i = 1; i <= 32; i++) {
+      const o = document.createElement('option');
+      o.value = i; o.textContent = i;
+      if (i === currentVal) o.selected = true;
+      sel.appendChild(o);
+    }
+  }
+
   function setTimeSig(beats, unit) {
-    beats = Math.max(1, Math.min(16, Math.round(beats)));
+    beats = Math.max(1, Math.min(32, Math.round(beats)));
     const prev = state.beats;
     state.beatsPerMeasure = beats;
     state.beatUnit = unit;
@@ -1371,14 +1483,16 @@
       slash.className = 'form-slash';
       slash.textContent = '/';
 
+      beatsIn.max = 32;
+
       const unitSel = document.createElement('select');
       unitSel.className = 'form-unit-select';
-      [4, 8].forEach(v => {
+      for (let v = 1; v <= 32; v++) {
         const o = document.createElement('option');
         o.value = v; o.textContent = v;
         if (v === entry.unit) o.selected = true;
         unitSel.appendChild(o);
-      });
+      }
 
       const delBtn = document.createElement('button');
       delBtn.className = 'form-delete-btn';
@@ -1418,6 +1532,17 @@
     renderFormList();
     updateFormCounter(advFormIdx);
   }
+
+  // ─── Sound Library UI ────────────────────────────────────────────────────────
+  document.querySelectorAll('.btn-sound').forEach(btn => {
+    btn.addEventListener('click', () => {
+      soundMode = btn.dataset.sound;
+      document.querySelectorAll('.btn-sound').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('voice-note').style.display = soundMode === 'voice' ? '' : 'none';
+      if (soundMode === 'voice') initVoices();
+    });
+  });
 
   // Advanced UI event handlers
   document.getElementById('adv-toggle').addEventListener('change', e => {
@@ -1467,11 +1592,12 @@
   function init() {
     state.beats = Array(state.beatsPerMeasure).fill('normal');
     state.beats[0] = 'accent';
-    // Seed the form with one measure matching the default time sig
     adv.form = [{ beats: 4, unit: 4, states: ['accent','normal','normal','normal'] }];
+    populateUnitSelect('unit-select', 4);
     renderBeatGrid();
     renderSubDots();
     renderFormList();
+    initVoices();
   }
 
   init();
