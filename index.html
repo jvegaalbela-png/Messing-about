@@ -612,23 +612,86 @@
 
     /* Form list */
     .form-list {
-      max-height: 260px;
+      max-height: 280px;
       overflow-y: auto;
       border: 1px solid #22224a;
       border-radius: 8px;
       margin-bottom: 0.6rem;
+      padding: 0.3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
+    /* Group header (collapsed block) */
+    .form-group-header {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.42rem 0.6rem;
+      background: #161632;
+      border-radius: 6px;
+      border: 1px solid #22224a;
+      transition: background 0.1s, border-color 0.1s;
+    }
+
+    .form-group-header.form-active {
+      background: #1e1e68;
+      border-color: #4040a0;
+    }
+
+    .form-group-range {
+      font-size: 0.62rem;
+      color: #383862;
+      min-width: 3.2rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .form-group-meter {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #9090d8;
+      min-width: 3rem;
+      letter-spacing: 0.02em;
+    }
+
+    .form-group-header.form-active .form-group-meter { color: #c0c0ff; }
+
+    .form-group-count {
+      font-size: 0.72rem;
+      color: #404075;
+      flex: 1;
+    }
+
+    .form-group-header.form-active .form-group-count { color: #6060a0; }
+
+    .form-expand-btn {
+      background: none;
+      border: none;
+      color: #404070;
+      cursor: pointer;
+      font-size: 0.75rem;
+      padding: 0.15rem 0.35rem;
+      border-radius: 3px;
+      line-height: 1;
+      transition: color 0.12s, background 0.12s;
+    }
+
+    .form-expand-btn:hover { color: #9090d0; background: #25254a; }
+
+    /* Individual rows shown when a group is expanded */
     .form-row {
       display: flex;
       align-items: center;
       gap: 0.45rem;
-      padding: 0.38rem 0.6rem;
-      transition: background 0.12s;
+      padding: 0.32rem 0.5rem 0.32rem 1.6rem;
+      border-radius: 4px;
+      background: #0e0e22;
+      border: 1px solid #1a1a38;
+      transition: background 0.1s;
     }
 
-    .form-row:not(:last-child) { border-bottom: 1px solid #1a1a38; }
-    .form-row.form-active { background: #20206a; }
+    .form-row.form-active { background: #1c1c58; border-color: #35358a; }
 
     .form-row-num {
       font-size: 0.68rem;
@@ -1431,10 +1494,15 @@
 
   function updateFormVisual(formIdx) {
     if (!adv.formEnabled || adv.form.length === 0) return;
-    document.querySelectorAll('.form-row').forEach((row, i) => {
-      row.classList.toggle('form-active', i === formIdx);
+    // Highlight the group block containing formIdx
+    document.querySelectorAll('.form-group-header').forEach(h => {
+      h.classList.toggle('form-active', formIdx >= +h.dataset.start && formIdx <= +h.dataset.end);
     });
-    const active = document.querySelector('.form-row.form-active');
+    // Also highlight the individual row if the group is expanded
+    document.querySelectorAll('.form-row[data-idx]').forEach(row => {
+      row.classList.toggle('form-active', +row.dataset.idx === formIdx);
+    });
+    const active = document.querySelector('.form-group-header.form-active');
     if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     updateFormCounter(formIdx);
     if (formIdx !== lastRenderedFormIdx && formIdx >= 0) {
@@ -1471,66 +1539,150 @@
   }
 
   // Form list rendering
+  // Track which group start-indices are expanded
+  const expandedGroups = new Set();
+
+  function groupForm() {
+    const groups = [];
+    let i = 0;
+    while (i < adv.form.length) {
+      const start = i;
+      const { beats, unit } = adv.form[i];
+      while (i < adv.form.length && adv.form[i].beats === beats && adv.form[i].unit === unit) i++;
+      groups.push({ beats, unit, start, end: i - 1, count: i - start });
+    }
+    return groups;
+  }
+
+  function makeFormRow(entry, idx) {
+    const row = document.createElement('div');
+    row.className = 'form-row';
+    row.dataset.idx = idx;
+
+    const numSpan = document.createElement('span');
+    numSpan.className = 'form-row-num';
+    numSpan.textContent = idx + 1;
+
+    const beatsIn = document.createElement('input');
+    beatsIn.type = 'number'; beatsIn.min = 1; beatsIn.max = 32;
+    beatsIn.value = entry.beats;
+    beatsIn.className = 'form-beats-input';
+
+    const slash = document.createElement('span');
+    slash.className = 'form-slash';
+    slash.textContent = '/';
+
+    const unitSel = document.createElement('select');
+    unitSel.className = 'form-unit-select';
+    for (let v = 1; v <= 32; v++) {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v;
+      if (v === entry.unit) o.selected = true;
+      unitSel.appendChild(o);
+    }
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'form-delete-btn';
+    delBtn.textContent = '✕';
+    delBtn.title = 'Remove this measure';
+
+    beatsIn.addEventListener('change', () => {
+      const b = Math.max(1, Math.min(32, +beatsIn.value));
+      beatsIn.value = b;
+      saveFormHistory();
+      const prev = entry.states.slice();
+      entry.beats = b;
+      entry.states = Array(b).fill('normal').map((_, i) => i < prev.length ? prev[i] : 'normal');
+      if (prev.length === 0) entry.states[0] = 'accent';
+      expandedGroups.clear();
+      renderFormList(); updateFormCounter(advFormIdx);
+    });
+    unitSel.addEventListener('change', () => {
+      saveFormHistory(); entry.unit = +unitSel.value;
+      expandedGroups.clear(); renderFormList();
+    });
+    delBtn.addEventListener('click', () => {
+      if (adv.form.length <= 1) return;
+      saveFormHistory();
+      adv.form.splice(idx, 1);
+      if (advFormIdx >= adv.form.length) advFormIdx = adv.form.length - 1;
+      expandedGroups.clear(); renderFormList(); updateFormCounter(advFormIdx);
+    });
+
+    row.append(numSpan, beatsIn, slash, unitSel, delBtn);
+    return row;
+  }
+
   function renderFormList() {
     const list = document.getElementById('form-list');
     if (!list) return;
     list.innerHTML = '';
-    adv.form.forEach((entry, idx) => {
-      const row = document.createElement('div');
-      row.className = 'form-row';
+    const groups = groupForm();
 
-      const numSpan   = document.createElement('span');
-      numSpan.className = 'form-row-num';
-      numSpan.textContent = idx + 1;
+    groups.forEach(group => {
+      const isExpanded = expandedGroups.has(group.start);
 
-      const beatsIn = document.createElement('input');
-      beatsIn.type = 'number'; beatsIn.min = 1; beatsIn.max = 16;
-      beatsIn.value = entry.beats;
-      beatsIn.className = 'form-beats-input';
+      // ── Group header ──────────────────────────────────────────
+      const header = document.createElement('div');
+      header.className = 'form-group-header';
+      header.dataset.start = group.start;
+      header.dataset.end   = group.end;
+      if (state.isPlaying && advFormIdx >= group.start && advFormIdx <= group.end)
+        header.classList.add('form-active');
 
-      const slash = document.createElement('span');
-      slash.className = 'form-slash';
-      slash.textContent = '/';
+      const rangeSpan = document.createElement('span');
+      rangeSpan.className = 'form-group-range';
+      rangeSpan.textContent = group.count === 1
+        ? String(group.start + 1)
+        : (group.start + 1) + '–' + (group.end + 1);
 
-      beatsIn.max = 32;
+      const meterSpan = document.createElement('span');
+      meterSpan.className = 'form-group-meter';
+      meterSpan.textContent = group.beats + '/' + group.unit;
 
-      const unitSel = document.createElement('select');
-      unitSel.className = 'form-unit-select';
-      for (let v = 1; v <= 32; v++) {
-        const o = document.createElement('option');
-        o.value = v; o.textContent = v;
-        if (v === entry.unit) o.selected = true;
-        unitSel.appendChild(o);
+      const countSpan = document.createElement('span');
+      countSpan.className = 'form-group-count';
+      countSpan.textContent = '×' + group.count;
+
+      const expandBtn = document.createElement('button');
+      expandBtn.className = 'form-expand-btn';
+      expandBtn.textContent = isExpanded ? '▲' : '▾';
+      expandBtn.title = isExpanded ? 'Collapse' : 'Expand to edit individual measures';
+
+      const delGroupBtn = document.createElement('button');
+      delGroupBtn.className = 'form-delete-btn';
+      delGroupBtn.title = 'Remove all ' + group.count + ' measure' + (group.count > 1 ? 's' : '');
+      delGroupBtn.textContent = '✕';
+
+      header.append(rangeSpan, meterSpan, countSpan, expandBtn, delGroupBtn);
+      list.appendChild(header);
+
+      // ── Expanded individual rows ──────────────────────────────
+      if (isExpanded) {
+        for (let idx = group.start; idx <= group.end; idx++) {
+          const row = makeFormRow(adv.form[idx], idx);
+          if (state.isPlaying && idx === advFormIdx) row.classList.add('form-active');
+          list.appendChild(row);
+        }
       }
 
-      const delBtn = document.createElement('button');
-      delBtn.className = 'form-delete-btn';
-      delBtn.textContent = '✕';
-      delBtn.title = 'Remove measure';
-
-      beatsIn.addEventListener('change', () => {
-        const b = Math.max(1, Math.min(32, +beatsIn.value));
-        beatsIn.value = b;
-        saveFormHistory();
-        const prev = entry.states.slice();
-        entry.beats = b;
-        entry.states = Array(b).fill('normal').map((_, i) => i < prev.length ? prev[i] : 'normal');
-        if (prev.length === 0) entry.states[0] = 'accent';
-        updateFormCounter(advFormIdx);
-      });
-      unitSel.addEventListener('change', () => { saveFormHistory(); entry.unit = +unitSel.value; });
-      delBtn.addEventListener('click', () => {
-        if (adv.form.length <= 1) return;
-        saveFormHistory();
-        adv.form.splice(idx, 1);
-        if (advFormIdx >= adv.form.length) advFormIdx = adv.form.length - 1;
+      // Events
+      expandBtn.addEventListener('click', () => {
+        if (expandedGroups.has(group.start)) expandedGroups.delete(group.start);
+        else expandedGroups.add(group.start);
         renderFormList();
-        updateFormCounter(advFormIdx);
       });
 
-      row.append(numSpan, beatsIn, slash, unitSel, delBtn);
-      list.appendChild(row);
+      delGroupBtn.addEventListener('click', () => {
+        saveFormHistory();
+        adv.form.splice(group.start, group.count);
+        if (adv.form.length === 0)
+          adv.form.push({ beats: 4, unit: 4, states: ['accent','normal','normal','normal'] });
+        if (advFormIdx >= adv.form.length) advFormIdx = adv.form.length - 1;
+        expandedGroups.clear(); renderFormList(); updateFormCounter(advFormIdx);
+      });
     });
+
     updateFormCounter(advFormIdx);
   }
 
