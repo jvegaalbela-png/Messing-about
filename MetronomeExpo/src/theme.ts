@@ -1,0 +1,53 @@
+import { StyleSheet } from 'react-native';
+
+export const Colors = {
+  background: '#0d0d1a',
+  cardBg: '#13132a',
+  cardBorder: '#25254a',
+  textPrimary: '#e0e0ff',
+  textSecondary: '#9090d0',
+  textDim: '#505090',
+  accentBlue: '#6060ff',
+  accentBlueBright: '#8080ff',
+  gold: '#ffc840',
+  goldDim: '#b08000',
+  btnBg: '#1e1e40',
+  btnBorder: '#35356a',
+  btnActiveBg: '#35358a',
+  btnActiveBorder: '#6565cc',
+  btnActiveText: '#c0c0ff',
+  playBg: '#3535a0',
+  playBorder: '#5555d0',
+  stopBg: '#8a2040',
+  stopBorder: '#c04060',
+  muteBg: '#141428',
+  muteBorder: '#252538',
+  muteText: '#383858',
+  greenPill: '#60c060',
+  greenPillBg: '#152015',
+  greenPillBorder: '#306030',
+  redPill: '#c06060',
+  redPillBg: '#201515',
+  redPillBorder: '#603030',
+  sliderTrack: '#222248',
+  sliderThumb: '#5555cc',
+};
+
+export const cardStyle = StyleSheet.create({
+  card: {
+    backgroundColor: Colors.cardBg,
+    borderColor: Colors.cardBorder,
+    borderWidth: 1,
+    borderRadius: 14,
+    padding: 20,
+    marginBottom: 12,
+  },
+  sectionLabel: {
+    fontSize: 10,
+    fontWeight: '600',
+    letterSpacing: 3,
+    color: Colors.textDim,
+    textTransform: 'uppercase',
+    marginBottom: 12,
+  },
+});
