@@ -114,6 +114,7 @@
       justify-content: center;
       gap: 0.75rem;
       margin-bottom: 1rem;
+      padding: 0 2.5rem;
     }
 
     .bpm-center {
@@ -480,7 +481,7 @@
   <div class="card">
     <div class="section-label">Tempo</div>
     <div class="bpm-row">
-      <div class="bpm-step-group" style="margin-left:1rem;">
+      <div class="bpm-step-group">
         <button class="btn btn-step" id="bpm-minus1">−1</button>
         <button class="btn btn-step" id="bpm-minus5">−5</button>
       </div>
@@ -488,15 +489,15 @@
         <div class="bpm-number" id="bpm-display" contenteditable="true" spellcheck="false" inputmode="numeric">120</div>
         <div class="bpm-unit">BPM</div>
       </div>
-      <div class="bpm-step-group" style="margin-right:1rem;">
+      <div class="bpm-step-group">
         <button class="btn btn-step" id="bpm-plus1">+1</button>
         <button class="btn btn-step" id="bpm-plus5">+5</button>
       </div>
     </div>
     <div class="slider-row">
-      <span class="slider-label">20</span>
-      <input type="range" id="bpm-slider" min="20" max="300" value="120">
-      <span class="slider-label">300</span>
+      <span class="slider-label">1</span>
+      <input type="range" id="bpm-slider" min="1" max="500" value="120">
+      <span class="slider-label">500</span>
     </div>
     <div class="tap-row">
       <button class="btn btn-tap" id="tap-tempo">Tap Tempo</button>
@@ -751,7 +752,7 @@
 
   // ─── BPM ─────────────────────────────────────────────────────────────────────
   function setBPM(value) {
-    state.bpm = Math.max(20, Math.min(300, Math.round(value)));
+    state.bpm = Math.max(1, Math.min(500, Math.round(value)));
     document.getElementById('bpm-display').textContent = state.bpm;
     document.getElementById('bpm-slider').value = state.bpm;
   }
