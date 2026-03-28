@@ -465,6 +465,236 @@
       margin-top: 0.5rem;
       letter-spacing: 0.1em;
     }
+
+    /* ─── Advanced Mode ──────────────────────────────────────── */
+    .adv-toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.875rem;
+      margin: 1rem 0 0.5rem;
+      cursor: pointer;
+    }
+
+    .adv-toggle-label {
+      font-size: 0.68rem;
+      letter-spacing: 0.25em;
+      color: #404070;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      user-select: none;
+    }
+
+    .adv-toggle-row.active .adv-toggle-label { color: #9090d0; }
+
+    /* Toggle switch */
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+
+    .toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: #1a1a35;
+      border: 1px solid #30305a;
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      left: 3px;
+      top: 3px;
+      background: #4040808a;
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .toggle-switch input:checked + .toggle-track {
+      background: #25257a;
+      border-color: #5555c0;
+    }
+
+    .toggle-switch input:checked + .toggle-track::after {
+      transform: translateX(20px);
+      background: #a0a0ff;
+    }
+
+    .adv-panel {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.35s ease;
+    }
+
+    .adv-panel.open { max-height: 9999px; }
+
+    .adv-feature-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .adv-feature-desc {
+      font-size: 0.7rem;
+      color: #484878;
+      margin-top: 0.2rem;
+      line-height: 1.4;
+    }
+
+    .adv-controls { transition: opacity 0.2s; }
+    .adv-controls.disabled { opacity: 0.3; pointer-events: none; }
+
+    .adv-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .adv-label {
+      font-size: 0.75rem;
+      color: #6060a0;
+      min-width: 5rem;
+    }
+
+    .adv-row input[type="range"] { flex: 1; }
+
+    .adv-value {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #b0b0ff;
+      min-width: 2rem;
+      text-align: right;
+    }
+
+    .adv-unit { font-size: 0.7rem; color: #404070; }
+
+    /* Gap phase indicator */
+    .gap-phase-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 0.25rem;
+      min-height: 1.6rem;
+    }
+
+    .phase-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      background: #1a1a35;
+      border: 1px solid #30305a;
+      color: #505090;
+      transition: all 0.15s;
+    }
+
+    .phase-pill.play  { background: #152015; border-color: #306030; color: #60c060; }
+    .phase-pill.silent{ background: #201515; border-color: #603030; color: #c06060; }
+
+    .phase-progress { font-size: 0.68rem; color: #404068; }
+
+    /* Form list */
+    .form-list {
+      max-height: 260px;
+      overflow-y: auto;
+      border: 1px solid #22224a;
+      border-radius: 8px;
+      margin-bottom: 0.6rem;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.38rem 0.6rem;
+      transition: background 0.12s;
+    }
+
+    .form-row:not(:last-child) { border-bottom: 1px solid #1a1a38; }
+    .form-row.form-active { background: #20206a; }
+
+    .form-row-num {
+      font-size: 0.68rem;
+      color: #383868;
+      min-width: 1.4rem;
+      text-align: right;
+    }
+
+    .form-beats-input {
+      width: 40px;
+      background: #1a1a38;
+      border: 1px solid #30305a;
+      color: #b0b0ff;
+      border-radius: 5px;
+      padding: 0.22rem 0.3rem;
+      font-size: 0.82rem;
+      font-family: inherit;
+      text-align: center;
+      outline: none;
+    }
+
+    .form-slash { color: #383868; font-size: 1rem; }
+
+    .form-unit-select {
+      width: 52px;
+      background: #1a1a38;
+      border: 1px solid #30305a;
+      color: #b0b0ff;
+      border-radius: 5px;
+      padding: 0.22rem 0.2rem;
+      font-size: 0.82rem;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .form-delete-btn {
+      margin-left: auto;
+      background: none;
+      border: none;
+      color: #40304060;
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      line-height: 1;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .form-delete-btn:hover { color: #c06060; background: #3a1a1a; }
+
+    .btn-add-measure {
+      width: 100%;
+      padding: 0.45rem;
+      font-size: 0.82rem;
+      border-style: dashed;
+      margin-bottom: 0.5rem;
+      color: #606090;
+    }
+
+    .form-counter {
+      font-size: 0.68rem;
+      color: #404068;
+      text-align: center;
+      min-height: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -564,6 +794,93 @@
     <button class="btn btn-play" id="play-stop">▶ Start</button>
   </div>
   <div class="spacebar-hint">Press Space to start / stop</div>
+
+  <!-- Advanced Mode Toggle -->
+  <div class="adv-toggle-row" id="adv-toggle-row">
+    <span class="adv-toggle-label">~ &nbsp;A D V A N C E D &nbsp; M O D E&nbsp; ~</span>
+    <label class="toggle-switch">
+      <input type="checkbox" id="adv-toggle">
+      <span class="toggle-track"></span>
+    </label>
+  </div>
+
+  <!-- Advanced Panel -->
+  <div class="adv-panel" id="adv-panel">
+
+    <!-- Gap Click -->
+    <div class="card">
+      <div class="adv-feature-header">
+        <div>
+          <div class="section-label">Gap Click</div>
+          <div class="adv-feature-desc">Play for N measures, then silence for M — trains your internal clock</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="gap-toggle">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <div id="gap-controls" class="adv-controls disabled">
+        <div class="adv-row">
+          <span class="adv-label">Play</span>
+          <input type="range" id="gap-play-slider" min="1" max="16" value="2">
+          <span class="adv-value" id="gap-play-val">2</span>
+          <span class="adv-unit">measures</span>
+        </div>
+        <div class="adv-row">
+          <span class="adv-label">Silence</span>
+          <input type="range" id="gap-silent-slider" min="1" max="15" value="2">
+          <span class="adv-value" id="gap-silent-val">2</span>
+          <span class="adv-unit">measures</span>
+        </div>
+        <div class="gap-phase-indicator">
+          <span class="phase-pill" id="gap-phase-pill">● Waiting</span>
+          <span class="phase-progress" id="gap-phase-progress"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Random Mute -->
+    <div class="card">
+      <div class="adv-feature-header">
+        <div>
+          <div class="section-label">Random Mute</div>
+          <div class="adv-feature-desc">Each beat has a chance of being silenced at random</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="random-mute-toggle">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <div id="random-mute-controls" class="adv-controls disabled">
+        <div class="adv-row">
+          <span class="adv-label">Probability</span>
+          <input type="range" id="random-mute-slider" min="0" max="100" value="30">
+          <span class="adv-value" id="random-mute-val">30</span>
+          <span class="adv-unit">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Form -->
+    <div class="card">
+      <div class="adv-feature-header">
+        <div>
+          <div class="section-label">Custom Form</div>
+          <div class="adv-feature-desc">Up to 64 measures with shifting time signatures, looping continuously</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="form-toggle">
+          <span class="toggle-track"></span>
+        </label>
+      </div>
+      <div id="form-controls" class="adv-controls disabled">
+        <div class="form-list" id="form-list"></div>
+        <button class="btn btn-add-measure" id="add-measure-btn">+ Add Measure</button>
+        <div class="form-counter" id="form-counter"></div>
+      </div>
+    </div>
+
+  </div>
 </div>
 
 <script>
@@ -579,13 +896,27 @@
     currentSub: 0,
   };
 
+  // ─── Advanced Mode State ──────────────────────────────────────────────────────
+  const adv = {
+    enabled: false,
+    gapEnabled: false, gapPlay: 2, gapSilent: 2,
+    randomMuteEnabled: false, randomMutePct: 30,
+    formEnabled: false,
+    form: [],   // [{ beats, unit, states[] }]
+  };
+
+  // Scheduler-side advanced state (runs SCHEDULE_AHEAD_S ahead of audio time)
+  let advGapPhase = 'play';   // 'play' | 'silent'
+  let advGapCount = 0;
+  let advFormIdx = 0;
+
   // ─── Audio ───────────────────────────────────────────────────────────────────
   let audioCtx = null;
   let nextNoteTime = 0.0;
   let schedulerTimer = null;
   let schedulerBeat = 0;
   let schedulerSub = 0;
-  const pendingVisuals = []; // { beat, sub, time }
+  const pendingVisuals = [];
 
   const LOOKAHEAD_MS = 25;
   const SCHEDULE_AHEAD_S = 0.1;
@@ -641,34 +972,68 @@
     osc.stop(time + 0.2);
   }
 
+  function getAdvConfig() {
+    if (adv.formEnabled && adv.form.length > 0) {
+      const e = adv.form[advFormIdx];
+      return { beatsPerMeasure: e.beats, beats: e.states };
+    }
+    return { beatsPerMeasure: state.beatsPerMeasure, beats: state.beats };
+  }
+
   function scheduler() {
     const ctx = getAudioCtx();
 
     while (nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD_S) {
       const beat = schedulerBeat;
-      const sub = schedulerSub;
+      const sub  = schedulerSub;
       const time = nextNoteTime;
+      const cfg  = getAdvConfig();
 
-      // Determine click type
+      // Base click type
       let clickType;
       if (sub === 0) {
-        const s = state.beats[beat];
+        const s = cfg.beats[beat] || 'normal';
         clickType = s === 'mute' ? 'mute' : s === 'accent' ? 'accent' : 'beat';
       } else {
         clickType = 'sub';
       }
 
+      // Gap click: silence entire measures
+      if (adv.gapEnabled && advGapPhase === 'silent') clickType = 'mute';
+
+      // Random mute: per-beat random silence
+      if (adv.randomMuteEnabled && sub === 0 && clickType !== 'mute') {
+        if (Math.random() < adv.randomMutePct / 100) clickType = 'mute';
+      }
+
       scheduleClick(time, clickType);
-      pendingVisuals.push({ beat, sub, time, clickType });
+      pendingVisuals.push({
+        beat, sub, time, clickType,
+        formIdx: advFormIdx,
+        gapPhase: advGapPhase,
+        gapCount: advGapCount,
+      });
 
       // Advance position
-      const secondsPerSub = (60.0 / state.bpm) / state.subdivision;
-      nextNoteTime += secondsPerSub;
+      nextNoteTime += (60.0 / state.bpm) / state.subdivision;
 
       schedulerSub++;
       if (schedulerSub >= state.subdivision) {
         schedulerSub = 0;
-        schedulerBeat = (schedulerBeat + 1) % state.beatsPerMeasure;
+        schedulerBeat++;
+        if (schedulerBeat >= cfg.beatsPerMeasure) {
+          schedulerBeat = 0;
+          // Measure completed — handle gap click phase transitions
+          if (adv.gapEnabled) {
+            advGapCount++;
+            if (advGapPhase === 'play'   && advGapCount >= adv.gapPlay)   { advGapPhase = 'silent'; advGapCount = 0; }
+            else if (advGapPhase === 'silent' && advGapCount >= adv.gapSilent) { advGapPhase = 'play';   advGapCount = 0; }
+          }
+          // Advance form index
+          if (adv.formEnabled && adv.form.length > 0) {
+            advFormIdx = (advFormIdx + 1) % adv.form.length;
+          }
+        }
       }
     }
 
@@ -679,8 +1044,11 @@
     const ctx = getAudioCtx();
     state.isPlaying = true;
     schedulerBeat = 0;
-    schedulerSub = 0;
-    nextNoteTime = ctx.currentTime + 0.05;
+    schedulerSub  = 0;
+    advGapPhase   = 'play';
+    advGapCount   = 0;
+    advFormIdx    = 0;
+    nextNoteTime  = ctx.currentTime + 0.05;
     pendingVisuals.length = 0;
     scheduler();
     requestAnimationFrame(visualLoop);
@@ -692,9 +1060,13 @@
     clearTimeout(schedulerTimer);
     pendingVisuals.length = 0;
     state.currentBeat = -1;
-    state.currentSub = 0;
-    applyBeatVisuals(-1, 0, null);
+    state.currentSub  = 0;
+    applyBeatVisuals(-1, 0, null, 0);
     updatePlayButton();
+    // Reset advanced visuals
+    updateGapVisual('idle', 0);
+    updateFormVisual(-1);
+    if (adv.formEnabled && adv.form.length > 0) renderBeatGridForEntry(adv.form[0]);
   }
 
   function togglePlay() {
@@ -708,30 +1080,29 @@
     const now = ctx.currentTime;
 
     while (pendingVisuals.length && pendingVisuals[0].time <= now) {
-      const { beat, sub, clickType } = pendingVisuals.shift();
-      state.currentBeat = beat;
-      state.currentSub = sub;
-      applyBeatVisuals(beat, sub, clickType);
+      const v = pendingVisuals.shift();
+      state.currentBeat = v.beat;
+      state.currentSub  = v.sub;
+      applyBeatVisuals(v.beat, v.sub, v.clickType, v.formIdx);
+      if (v.beat === 0 && v.sub === 0) {
+        updateGapVisual(v.gapPhase, v.gapCount);
+        updateFormVisual(v.formIdx);
+      }
     }
 
     requestAnimationFrame(visualLoop);
   }
 
-  function applyBeatVisuals(beat, sub, clickType) {
-    // Update beat buttons
+  function applyBeatVisuals(beat, sub, clickType, formIdx) {
     document.querySelectorAll('.beat-btn').forEach((el, i) => {
       el.classList.toggle('active', i === beat && sub === 0);
     });
 
-    // Update sub-dots
     document.querySelectorAll('.sub-dot').forEach((dot, i) => {
       dot.classList.remove('active', 'active-accent');
-      if (i === sub) {
-        dot.classList.add(clickType === 'accent' ? 'active-accent' : 'active');
-      }
+      if (i === sub) dot.classList.add(clickType === 'accent' ? 'active-accent' : 'active');
     });
 
-    // Flash header indicators
     const flash1 = document.getElementById('beat-flash');
     const flash2 = document.getElementById('beat-flash-2');
     flash1.className = 'beat-flash';
@@ -741,10 +1112,7 @@
       const cls = clickType === 'accent' ? 'on-accent' : 'on-beat';
       flash1.classList.add(cls);
       flash2.classList.add(cls);
-      setTimeout(() => {
-        flash1.className = 'beat-flash';
-        flash2.className = 'beat-flash';
-      }, 120);
+      setTimeout(() => { flash1.className = 'beat-flash'; flash2.className = 'beat-flash'; }, 120);
     }
   }
 
@@ -911,12 +1279,199 @@
     }
   });
 
+  // ─── Advanced Mode ────────────────────────────────────────────────────────────
+
+  // Gap click visuals
+  function updateGapVisual(phase, count) {
+    const pill = document.getElementById('gap-phase-pill');
+    const prog = document.getElementById('gap-phase-progress');
+    if (!pill || !prog) return;
+    if (phase === 'idle' || !adv.gapEnabled || !state.isPlaying) {
+      pill.className = 'phase-pill';
+      pill.textContent = '● Waiting';
+      prog.textContent = '';
+      return;
+    }
+    if (phase === 'play') {
+      pill.className = 'phase-pill play';
+      pill.textContent = '▶ Playing';
+      const left = adv.gapPlay - count;
+      prog.textContent = left + ' measure' + (left !== 1 ? 's' : '') + ' left';
+    } else {
+      pill.className = 'phase-pill silent';
+      pill.textContent = '● Silent';
+      const left = adv.gapSilent - count;
+      prog.textContent = left + ' measure' + (left !== 1 ? 's' : '') + ' left';
+    }
+  }
+
+  // Form visuals
+  let lastRenderedFormIdx = -1;
+
+  function updateFormVisual(formIdx) {
+    if (!adv.formEnabled || adv.form.length === 0) return;
+    document.querySelectorAll('.form-row').forEach((row, i) => {
+      row.classList.toggle('form-active', i === formIdx);
+    });
+    const active = document.querySelector('.form-row.form-active');
+    if (active) active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    updateFormCounter(formIdx);
+    if (formIdx !== lastRenderedFormIdx && formIdx >= 0) {
+      lastRenderedFormIdx = formIdx;
+      renderBeatGridForEntry(adv.form[formIdx]);
+    }
+  }
+
+  function updateFormCounter(formIdx) {
+    const el = document.getElementById('form-counter');
+    if (!el) return;
+    if (adv.form.length === 0) { el.textContent = ''; return; }
+    el.textContent = state.isPlaying && formIdx >= 0
+      ? 'Measure ' + (formIdx + 1) + ' of ' + adv.form.length
+      : adv.form.length + ' measure' + (adv.form.length !== 1 ? 's' : '');
+  }
+
+  // Render the beat grid from a form entry's data
+  function renderBeatGridForEntry(entry) {
+    const grid = document.getElementById('beat-grid');
+    grid.innerHTML = '';
+    entry.states.forEach((beatState, i) => {
+      const btn = document.createElement('button');
+      const isActive = state.isPlaying && state.currentBeat === i && state.currentSub === 0;
+      btn.className = 'beat-btn state-' + beatState + (isActive ? ' active' : '');
+      btn.innerHTML = '<span class="beat-num">' + (i + 1) + '</span><span class="beat-icon">' + STATE_ICONS[beatState] + '</span>';
+      btn.addEventListener('click', () => {
+        entry.states[i] = STATE_CYCLE[entry.states[i]];
+        btn.className = 'beat-btn state-' + entry.states[i] + (btn.classList.contains('active') ? ' active' : '');
+        btn.querySelector('.beat-icon').textContent = STATE_ICONS[entry.states[i]];
+      });
+      grid.appendChild(btn);
+    });
+  }
+
+  // Form list rendering
+  function renderFormList() {
+    const list = document.getElementById('form-list');
+    if (!list) return;
+    list.innerHTML = '';
+    adv.form.forEach((entry, idx) => {
+      const row = document.createElement('div');
+      row.className = 'form-row';
+
+      const numSpan   = document.createElement('span');
+      numSpan.className = 'form-row-num';
+      numSpan.textContent = idx + 1;
+
+      const beatsIn = document.createElement('input');
+      beatsIn.type = 'number'; beatsIn.min = 1; beatsIn.max = 16;
+      beatsIn.value = entry.beats;
+      beatsIn.className = 'form-beats-input';
+
+      const slash = document.createElement('span');
+      slash.className = 'form-slash';
+      slash.textContent = '/';
+
+      const unitSel = document.createElement('select');
+      unitSel.className = 'form-unit-select';
+      [4, 8].forEach(v => {
+        const o = document.createElement('option');
+        o.value = v; o.textContent = v;
+        if (v === entry.unit) o.selected = true;
+        unitSel.appendChild(o);
+      });
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'form-delete-btn';
+      delBtn.textContent = '✕';
+      delBtn.title = 'Remove measure';
+
+      beatsIn.addEventListener('change', () => {
+        const b = Math.max(1, Math.min(16, +beatsIn.value));
+        beatsIn.value = b;
+        const prev = entry.states.slice();
+        entry.beats = b;
+        entry.states = Array(b).fill('normal').map((_, i) => i < prev.length ? prev[i] : 'normal');
+        if (prev.length === 0) entry.states[0] = 'accent';
+        updateFormCounter(advFormIdx);
+      });
+      unitSel.addEventListener('change', () => { entry.unit = +unitSel.value; });
+      delBtn.addEventListener('click', () => {
+        if (adv.form.length <= 1) return;
+        adv.form.splice(idx, 1);
+        if (advFormIdx >= adv.form.length) advFormIdx = adv.form.length - 1;
+        renderFormList();
+        updateFormCounter(advFormIdx);
+      });
+
+      row.append(numSpan, beatsIn, slash, unitSel, delBtn);
+      list.appendChild(row);
+    });
+    updateFormCounter(advFormIdx);
+  }
+
+  function addFormMeasure() {
+    if (adv.form.length >= 64) return;
+    const last = adv.form[adv.form.length - 1] || { beats: 4, unit: 4 };
+    const states = Array(last.beats).fill('normal');
+    states[0] = 'accent';
+    adv.form.push({ beats: last.beats, unit: last.unit, states });
+    renderFormList();
+    updateFormCounter(advFormIdx);
+  }
+
+  // Advanced UI event handlers
+  document.getElementById('adv-toggle').addEventListener('change', e => {
+    adv.enabled = e.target.checked;
+    document.getElementById('adv-panel').classList.toggle('open', adv.enabled);
+    document.getElementById('adv-toggle-row').classList.toggle('active', adv.enabled);
+  });
+
+  document.getElementById('gap-toggle').addEventListener('change', e => {
+    adv.gapEnabled = e.target.checked;
+    document.getElementById('gap-controls').classList.toggle('disabled', !adv.gapEnabled);
+    if (!adv.gapEnabled) updateGapVisual('idle', 0);
+  });
+
+  document.getElementById('gap-play-slider').addEventListener('input', e => {
+    adv.gapPlay = +e.target.value;
+    document.getElementById('gap-play-val').textContent = adv.gapPlay;
+  });
+
+  document.getElementById('gap-silent-slider').addEventListener('input', e => {
+    adv.gapSilent = +e.target.value;
+    document.getElementById('gap-silent-val').textContent = adv.gapSilent;
+  });
+
+  document.getElementById('random-mute-toggle').addEventListener('change', e => {
+    adv.randomMuteEnabled = e.target.checked;
+    document.getElementById('random-mute-controls').classList.toggle('disabled', !adv.randomMuteEnabled);
+  });
+
+  document.getElementById('random-mute-slider').addEventListener('input', e => {
+    adv.randomMutePct = +e.target.value;
+    document.getElementById('random-mute-val').textContent = adv.randomMutePct;
+  });
+
+  document.getElementById('form-toggle').addEventListener('change', e => {
+    adv.formEnabled = e.target.checked;
+    document.getElementById('form-controls').classList.toggle('disabled', !adv.formEnabled);
+    lastRenderedFormIdx = -1;
+    if (adv.formEnabled && adv.form.length > 0) renderBeatGridForEntry(adv.form[0]);
+    else renderBeatGrid();
+    updateFormCounter(advFormIdx);
+  });
+
+  document.getElementById('add-measure-btn').addEventListener('click', addFormMeasure);
+
   // ─── Init ─────────────────────────────────────────────────────────────────────
   function init() {
     state.beats = Array(state.beatsPerMeasure).fill('normal');
     state.beats[0] = 'accent';
+    // Seed the form with one measure matching the default time sig
+    adv.form = [{ beats: 4, unit: 4, states: ['accent','normal','normal','normal'] }];
     renderBeatGrid();
     renderSubDots();
+    renderFormList();
   }
 
   init();
