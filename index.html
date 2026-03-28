@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Metronome</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0d0d1a;
+      color: #e0e0ff;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 1.5rem 1rem 3rem;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 620px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 300;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: #8888cc;
+    }
+
+    .beat-flash {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #2a2a50;
+      border: 2px solid #4040a0;
+      transition: background 0.05s, box-shadow 0.05s;
+      flex-shrink: 0;
+    }
+
+    .beat-flash.on-accent {
+      background: #ffc840;
+      border-color: #ffd060;
+      box-shadow: 0 0 12px #ffc84099;
+    }
+
+    .beat-flash.on-beat {
+      background: #6060ff;
+      border-color: #8080ff;
+      box-shadow: 0 0 12px #6060ff88;
+    }
+
+    /* Cards */
+    .card {
+      background: #13132a;
+      border: 1px solid #25254a;
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 0.875rem;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: #505090;
+      margin-bottom: 1rem;
+    }
+
+    /* Buttons */
+    .btn {
+      background: #1e1e40;
+      border: 1px solid #35356a;
+      color: #9090d0;
+      border-radius: 8px;
+      padding: 0.45rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-family: inherit;
+      transition: background 0.12s, border-color 0.12s, color 0.12s, transform 0.08s;
+      user-select: none;
+    }
+
+    .btn:hover {
+      background: #2a2a55;
+      border-color: #5050a0;
+      color: #b0b0ff;
+    }
+
+    .btn:active { transform: scale(0.95); }
+
+    .btn.active {
+      background: #35358a;
+      border-color: #6565cc;
+      color: #c0c0ff;
+    }
+
+    /* BPM Section */
+    .bpm-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .bpm-center {
+      text-align: center;
+      flex: 0 0 auto;
+    }
+
+    .bpm-number {
+      font-size: 4.5rem;
+      font-weight: 700;
+      color: #ffffff;
+      cursor: text;
+      min-width: 5ch;
+      display: inline-block;
+      text-align: center;
+      line-height: 1;
+      border-bottom: 2px solid transparent;
+      outline: none;
+      transition: border-color 0.15s;
+      caret-color: #8080ff;
+    }
+
+    .bpm-number:focus {
+      border-bottom-color: #6060ff;
+      color: #c0c0ff;
+    }
+
+    .bpm-unit {
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      color: #505090;
+      text-transform: uppercase;
+      margin-top: 0.2rem;
+    }
+
+    .bpm-step-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .btn-step {
+      min-width: 46px;
+      font-size: 0.85rem;
+      padding: 0.4rem 0.6rem;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .slider-label {
+      font-size: 0.75rem;
+      color: #404070;
+      min-width: 2.5ch;
+      text-align: center;
+    }
+
+    input[type="range"] {
+      flex: 1;
+      appearance: none;
+      height: 6px;
+      background: #222248;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: #5555cc;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #7070e0;
+      transition: background 0.12s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: #7070e0;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background: #5555cc;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #7070e0;
+    }
+
+    .tap-row {
+      display: flex;
+      justify-content: center;
+    }
+
+    .btn-tap {
+      min-width: 140px;
+      padding: 0.6rem 1.5rem;
+      font-size: 0.95rem;
+      letter-spacing: 0.05em;
+    }
+
+    .btn-tap:active {
+      background: #2a2a6a;
+      border-color: #6060c0;
+    }
+
+    /* Time Signature */
+    .time-sig-presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn-sig {
+      font-size: 0.9rem;
+      padding: 0.35rem 0.75rem;
+      font-weight: 600;
+    }
+
+    .custom-sig {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .custom-sig-label {
+      font-size: 0.75rem;
+      color: #505090;
+    }
+
+    .custom-sig input,
+    .custom-sig select {
+      background: #1e1e40;
+      border: 1px solid #35356a;
+      color: #c0c0ff;
+      border-radius: 7px;
+      padding: 0.35rem 0.5rem;
+      font-size: 0.95rem;
+      font-family: inherit;
+      width: 60px;
+      text-align: center;
+      outline: none;
+    }
+
+    .custom-sig select { width: 70px; cursor: pointer; }
+
+    .custom-sig-slash {
+      font-size: 1.6rem;
+      color: #404080;
+      line-height: 1;
+    }
+
+    /* Subdivision */
+    .subdivision-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+    }
+
+    .btn-sub {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.6rem 0.4rem;
+    }
+
+    .sub-icon {
+      font-size: 1.1rem;
+      line-height: 1;
+    }
+
+    .sub-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.05em;
+      color: #606090;
+    }
+
+    .btn-sub.active .sub-label {
+      color: #a0a0d0;
+    }
+
+    /* Beat Grid */
+    #beat-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      justify-content: center;
+    }
+
+    .beat-btn {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      border: 3px solid #35356a;
+      background: #1e1e40;
+      color: #8080c0;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.12s, background 0.12s, color 0.12s, transform 0.12s, box-shadow 0.12s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      user-select: none;
+    }
+
+    .beat-btn:hover {
+      border-color: #5050a0;
+      background: #252550;
+    }
+
+    .beat-btn .beat-num {
+      font-size: 1.3rem;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .beat-btn .beat-icon {
+      font-size: 0.65rem;
+      line-height: 1;
+      opacity: 0.7;
+    }
+
+    /* Beat states */
+    .beat-btn.state-normal {
+      border-color: #404080;
+      background: #1e1e40;
+      color: #8080c0;
+    }
+
+    .beat-btn.state-accent {
+      border-color: #b08000;
+      background: #2a2000;
+      color: #ffc840;
+    }
+
+    .beat-btn.state-mute {
+      border-color: #252538;
+      background: #141428;
+      color: #383858;
+    }
+
+    /* Active beat */
+    .beat-btn.active.state-normal {
+      border-color: #7070e0;
+      background: #25256a;
+      color: #c0c0ff;
+      box-shadow: 0 0 0 4px #6060ff44, 0 0 18px #6060ff55;
+      transform: scale(1.12);
+    }
+
+    .beat-btn.active.state-accent {
+      border-color: #ffcc40;
+      background: #3a2e00;
+      color: #ffe070;
+      box-shadow: 0 0 0 4px #ffc84055, 0 0 18px #ffc84055;
+      transform: scale(1.12);
+    }
+
+    .beat-btn.active.state-mute {
+      border-color: #404055;
+      transform: scale(1.05);
+    }
+
+    /* Sub-beat dots */
+    .sub-indicators {
+      display: flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 1rem;
+      min-height: 12px;
+    }
+
+    .sub-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #20204a;
+      border: 1px solid #35356a;
+      transition: background 0.05s, border-color 0.05s;
+    }
+
+    .sub-dot.active {
+      background: #5050c0;
+      border-color: #7070e0;
+    }
+
+    .sub-dot.active-accent {
+      background: #c09000;
+      border-color: #ffc840;
+    }
+
+    /* Beat grid hint */
+    .beat-grid-hint {
+      font-size: 0.65rem;
+      color: #404070;
+      text-align: center;
+      margin-top: 0.75rem;
+      letter-spacing: 0.05em;
+    }
+
+    /* Play Section */
+    .play-section {
+      display: flex;
+      justify-content: center;
+      margin-top: 0.5rem;
+    }
+
+    .btn-play {
+      min-width: 180px;
+      padding: 0.9rem 2rem;
+      font-size: 1.15rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      border-radius: 50px;
+      background: #3535a0;
+      border-color: #5555d0;
+      color: #e0e0ff;
+    }
+
+    .btn-play:hover {
+      background: #4545b8;
+      border-color: #7070e0;
+      color: #fff;
+    }
+
+    .btn-play.playing {
+      background: #8a2040;
+      border-color: #c04060;
+      color: #ffccd8;
+    }
+
+    .btn-play.playing:hover {
+      background: #a02848;
+      border-color: #e05070;
+    }
+
+    .spacebar-hint {
+      font-size: 0.65rem;
+      color: #303060;
+      text-align: center;
+      margin-top: 0.5rem;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="beat-flash" id="beat-flash"></div>
+    <h1>Metronome</h1>
+    <div class="beat-flash" id="beat-flash-2"></div>
+  </div>
+
+  <!-- BPM -->
+  <div class="card">
+    <div class="section-label">Tempo</div>
+    <div class="bpm-row">
+      <div class="bpm-step-group">
+        <button class="btn btn-step" id="bpm-minus5">−5</button>
+        <button class="btn btn-step" id="bpm-minus1">−1</button>
+      </div>
+      <div class="bpm-center">
+        <div class="bpm-number" id="bpm-display" contenteditable="true" spellcheck="false" inputmode="numeric">120</div>
+        <div class="bpm-unit">BPM</div>
+      </div>
+      <div class="bpm-step-group">
+        <button class="btn btn-step" id="bpm-plus1">+1</button>
+        <button class="btn btn-step" id="bpm-plus5">+5</button>
+      </div>
+    </div>
+    <div class="slider-row">
+      <span class="slider-label">20</span>
+      <input type="range" id="bpm-slider" min="20" max="300" value="120">
+      <span class="slider-label">300</span>
+    </div>
+    <div class="tap-row">
+      <button class="btn btn-tap" id="tap-tempo">Tap Tempo</button>
+    </div>
+  </div>
+
+  <!-- Time Signature -->
+  <div class="card">
+    <div class="section-label">Time Signature</div>
+    <div class="time-sig-presets" id="time-sig-presets">
+      <button class="btn btn-sig" data-beats="2" data-unit="4">2/4</button>
+      <button class="btn btn-sig" data-beats="3" data-unit="4">3/4</button>
+      <button class="btn btn-sig active" data-beats="4" data-unit="4">4/4</button>
+      <button class="btn btn-sig" data-beats="5" data-unit="4">5/4</button>
+      <button class="btn btn-sig" data-beats="6" data-unit="4">6/4</button>
+      <button class="btn btn-sig" data-beats="7" data-unit="4">7/4</button>
+      <button class="btn btn-sig" data-beats="6" data-unit="8">6/8</button>
+      <button class="btn btn-sig" data-beats="7" data-unit="8">7/8</button>
+      <button class="btn btn-sig" data-beats="9" data-unit="8">9/8</button>
+      <button class="btn btn-sig" data-beats="12" data-unit="8">12/8</button>
+    </div>
+    <div class="custom-sig">
+      <span class="custom-sig-label">Custom:</span>
+      <input type="number" id="beats-input" min="1" max="16" value="4">
+      <span class="custom-sig-slash">/</span>
+      <select id="unit-select">
+        <option value="4" selected>4</option>
+        <option value="8">8</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Subdivision -->
+  <div class="card">
+    <div class="section-label">Subdivision</div>
+    <div class="subdivision-grid">
+      <button class="btn btn-sub active" data-sub="1">
+        <span class="sub-icon">♩</span>
+        <span class="sub-label">None</span>
+      </button>
+      <button class="btn btn-sub" data-sub="2">
+        <span class="sub-icon">♪♪</span>
+        <span class="sub-label">Duplet</span>
+      </button>
+      <button class="btn btn-sub" data-sub="3">
+        <span class="sub-icon">♪♪♪</span>
+        <span class="sub-label">Triplet</span>
+      </button>
+      <button class="btn btn-sub" data-sub="4">
+        <span class="sub-icon">♬♬</span>
+        <span class="sub-label">Quadruplet</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Beat Grid -->
+  <div class="card">
+    <div class="section-label">Beats</div>
+    <div id="beat-grid"></div>
+    <div class="sub-indicators" id="sub-indicators"></div>
+    <div class="beat-grid-hint">Click a beat to cycle: Normal → Accent → Mute</div>
+  </div>
+
+  <!-- Play -->
+  <div class="play-section">
+    <button class="btn btn-play" id="play-stop">▶ Start</button>
+  </div>
+  <div class="spacebar-hint">Press Space to start / stop</div>
+</div>
+
+<script>
+  // ─── State ───────────────────────────────────────────────────────────────────
+  const state = {
+    bpm: 120,
+    beatsPerMeasure: 4,
+    beatUnit: 4,
+    subdivision: 1,
+    beats: [],        // 'normal' | 'accent' | 'mute'
+    isPlaying: false,
+    currentBeat: -1,
+    currentSub: 0,
+  };
+
+  // ─── Audio ───────────────────────────────────────────────────────────────────
+  let audioCtx = null;
+  let nextNoteTime = 0.0;
+  let schedulerTimer = null;
+  let schedulerBeat = 0;
+  let schedulerSub = 0;
+  const pendingVisuals = []; // { beat, sub, time }
+
+  const LOOKAHEAD_MS = 25;
+  const SCHEDULE_AHEAD_S = 0.1;
+
+  function getAudioCtx() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function scheduleClick(time, type) {
+    // type: 'accent' | 'beat' | 'sub' | 'mute'
+    if (type === 'mute') return;
+
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const filter = ctx.createBiquadFilter();
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    filter.type = 'bandpass';
+
+    if (type === 'accent') {
+      osc.frequency.value = 1050;
+      filter.frequency.value = 1050;
+      filter.Q.value = 0.6;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(1.0, time + 0.001);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+    } else if (type === 'beat') {
+      osc.frequency.value = 800;
+      filter.frequency.value = 800;
+      filter.Q.value = 0.5;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.75, time + 0.001);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.09);
+    } else {
+      // subdivision
+      osc.frequency.value = 1600;
+      filter.frequency.value = 1600;
+      filter.Q.value = 1.2;
+      gain.gain.setValueAtTime(0, time);
+      gain.gain.linearRampToValueAtTime(0.3, time + 0.001);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.05);
+    }
+
+    osc.start(time);
+    osc.stop(time + 0.2);
+  }
+
+  function scheduler() {
+    const ctx = getAudioCtx();
+
+    while (nextNoteTime < ctx.currentTime + SCHEDULE_AHEAD_S) {
+      const beat = schedulerBeat;
+      const sub = schedulerSub;
+      const time = nextNoteTime;
+
+      // Determine click type
+      let clickType;
+      if (sub === 0) {
+        const s = state.beats[beat];
+        clickType = s === 'mute' ? 'mute' : s === 'accent' ? 'accent' : 'beat';
+      } else {
+        clickType = 'sub';
+      }
+
+      scheduleClick(time, clickType);
+      pendingVisuals.push({ beat, sub, time, clickType });
+
+      // Advance position
+      const secondsPerSub = (60.0 / state.bpm) / state.subdivision;
+      nextNoteTime += secondsPerSub;
+
+      schedulerSub++;
+      if (schedulerSub >= state.subdivision) {
+        schedulerSub = 0;
+        schedulerBeat = (schedulerBeat + 1) % state.beatsPerMeasure;
+      }
+    }
+
+    schedulerTimer = setTimeout(scheduler, LOOKAHEAD_MS);
+  }
+
+  function startMetronome() {
+    const ctx = getAudioCtx();
+    state.isPlaying = true;
+    schedulerBeat = 0;
+    schedulerSub = 0;
+    nextNoteTime = ctx.currentTime + 0.05;
+    pendingVisuals.length = 0;
+    scheduler();
+    requestAnimationFrame(visualLoop);
+    updatePlayButton();
+  }
+
+  function stopMetronome() {
+    state.isPlaying = false;
+    clearTimeout(schedulerTimer);
+    pendingVisuals.length = 0;
+    state.currentBeat = -1;
+    state.currentSub = 0;
+    applyBeatVisuals(-1, 0, null);
+    updatePlayButton();
+  }
+
+  function togglePlay() {
+    state.isPlaying ? stopMetronome() : startMetronome();
+  }
+
+  // ─── Visual Loop ─────────────────────────────────────────────────────────────
+  function visualLoop() {
+    if (!state.isPlaying) return;
+    const ctx = getAudioCtx();
+    const now = ctx.currentTime;
+
+    while (pendingVisuals.length && pendingVisuals[0].time <= now) {
+      const { beat, sub, clickType } = pendingVisuals.shift();
+      state.currentBeat = beat;
+      state.currentSub = sub;
+      applyBeatVisuals(beat, sub, clickType);
+    }
+
+    requestAnimationFrame(visualLoop);
+  }
+
+  function applyBeatVisuals(beat, sub, clickType) {
+    // Update beat buttons
+    document.querySelectorAll('.beat-btn').forEach((el, i) => {
+      el.classList.toggle('active', i === beat && sub === 0);
+    });
+
+    // Update sub-dots
+    document.querySelectorAll('.sub-dot').forEach((dot, i) => {
+      dot.classList.remove('active', 'active-accent');
+      if (i === sub) {
+        dot.classList.add(clickType === 'accent' ? 'active-accent' : 'active');
+      }
+    });
+
+    // Flash header indicators
+    const flash1 = document.getElementById('beat-flash');
+    const flash2 = document.getElementById('beat-flash-2');
+    flash1.className = 'beat-flash';
+    flash2.className = 'beat-flash';
+
+    if (sub === 0 && clickType !== 'mute') {
+      const cls = clickType === 'accent' ? 'on-accent' : 'on-beat';
+      flash1.classList.add(cls);
+      flash2.classList.add(cls);
+      setTimeout(() => {
+        flash1.className = 'beat-flash';
+        flash2.className = 'beat-flash';
+      }, 120);
+    }
+  }
+
+  // ─── BPM ─────────────────────────────────────────────────────────────────────
+  function setBPM(value) {
+    state.bpm = Math.max(20, Math.min(300, Math.round(value)));
+    document.getElementById('bpm-display').textContent = state.bpm;
+    document.getElementById('bpm-slider').value = state.bpm;
+  }
+
+  document.getElementById('bpm-slider').addEventListener('input', e => setBPM(+e.target.value));
+  document.getElementById('bpm-minus1').addEventListener('click', () => setBPM(state.bpm - 1));
+  document.getElementById('bpm-plus1').addEventListener('click', () => setBPM(state.bpm + 1));
+  document.getElementById('bpm-minus5').addEventListener('click', () => setBPM(state.bpm - 5));
+  document.getElementById('bpm-plus5').addEventListener('click', () => setBPM(state.bpm + 5));
+
+  const bpmEl = document.getElementById('bpm-display');
+  bpmEl.addEventListener('focus', () => {
+    // Select all text on focus
+    const range = document.createRange();
+    range.selectNodeContents(bpmEl);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+  bpmEl.addEventListener('blur', () => {
+    const val = parseInt(bpmEl.textContent.replace(/\D/g, ''), 10);
+    setBPM(isNaN(val) ? 120 : val);
+  });
+  bpmEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { e.preventDefault(); bpmEl.blur(); }
+    if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+    // Allow only digits and editing keys
+    if (!/^[0-9]$/.test(e.key) && !['Backspace','Delete','ArrowLeft','ArrowRight','Tab'].includes(e.key)) {
+      e.preventDefault();
+    }
+  });
+
+  // Tap Tempo
+  let tapTimes = [];
+  document.getElementById('tap-tempo').addEventListener('click', () => {
+    const now = Date.now();
+    tapTimes.push(now);
+    tapTimes = tapTimes.filter(t => now - t < 4000).slice(-8);
+    if (tapTimes.length >= 2) {
+      const intervals = [];
+      for (let i = 1; i < tapTimes.length; i++) intervals.push(tapTimes[i] - tapTimes[i - 1]);
+      const avg = intervals.reduce((a, b) => a + b, 0) / intervals.length;
+      setBPM(Math.round(60000 / avg));
+    }
+  });
+
+  // ─── Time Signature ───────────────────────────────────────────────────────────
+  function setTimeSig(beats, unit) {
+    beats = Math.max(1, Math.min(16, Math.round(beats)));
+    const prev = state.beats;
+    state.beatsPerMeasure = beats;
+    state.beatUnit = unit;
+
+    // Build new beats array, preserving existing states
+    const newBeats = [];
+    for (let i = 0; i < beats; i++) {
+      newBeats.push(i < prev.length ? prev[i] : 'normal');
+    }
+    // Beat 1 should always be accent if we're initializing fresh
+    if (prev.length === 0) newBeats[0] = 'accent';
+    state.beats = newBeats;
+
+    if (state.currentBeat >= beats) state.currentBeat = -1;
+
+    // Sync UI
+    document.getElementById('beats-input').value = beats;
+    document.getElementById('unit-select').value = unit;
+
+    document.querySelectorAll('#time-sig-presets .btn-sig').forEach(btn => {
+      btn.classList.toggle('active',
+        +btn.dataset.beats === beats && +btn.dataset.unit === unit);
+    });
+
+    renderBeatGrid();
+    renderSubDots();
+  }
+
+  document.querySelectorAll('#time-sig-presets .btn-sig').forEach(btn => {
+    btn.addEventListener('click', () => setTimeSig(+btn.dataset.beats, +btn.dataset.unit));
+  });
+
+  document.getElementById('beats-input').addEventListener('change', e => {
+    setTimeSig(+e.target.value, state.beatUnit);
+  });
+  document.getElementById('unit-select').addEventListener('change', e => {
+    setTimeSig(state.beatsPerMeasure, +e.target.value);
+  });
+
+  // ─── Subdivision ──────────────────────────────────────────────────────────────
+  function setSubdivision(sub) {
+    state.subdivision = sub;
+    document.querySelectorAll('.btn-sub').forEach(btn => {
+      btn.classList.toggle('active', +btn.dataset.sub === sub);
+    });
+    renderSubDots();
+  }
+
+  document.querySelectorAll('.btn-sub').forEach(btn => {
+    btn.addEventListener('click', () => setSubdivision(+btn.dataset.sub));
+  });
+
+  // ─── Beat Grid ────────────────────────────────────────────────────────────────
+  const STATE_CYCLE = { normal: 'accent', accent: 'mute', mute: 'normal' };
+  const STATE_ICONS = { normal: '●', accent: '▲', mute: '✕' };
+
+  function renderBeatGrid() {
+    const grid = document.getElementById('beat-grid');
+    grid.innerHTML = '';
+
+    state.beats.forEach((beatState, i) => {
+      const btn = document.createElement('button');
+      const isActive = state.isPlaying && state.currentBeat === i && state.currentSub === 0;
+      btn.className = `beat-btn state-${beatState}${isActive ? ' active' : ''}`;
+      btn.innerHTML = `<span class="beat-num">${i + 1}</span><span class="beat-icon">${STATE_ICONS[beatState]}</span>`;
+      btn.title = `Beat ${i + 1}: ${beatState} — click to change`;
+
+      btn.addEventListener('click', () => {
+        state.beats[i] = STATE_CYCLE[state.beats[i]];
+        // Update just this button
+        btn.className = `beat-btn state-${state.beats[i]}${btn.classList.contains('active') ? ' active' : ''}`;
+        btn.querySelector('.beat-icon').textContent = STATE_ICONS[state.beats[i]];
+      });
+
+      grid.appendChild(btn);
+    });
+  }
+
+  function renderSubDots() {
+    const container = document.getElementById('sub-indicators');
+    container.innerHTML = '';
+    if (state.subdivision <= 1) return;
+    for (let i = 0; i < state.subdivision; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'sub-dot';
+      container.appendChild(dot);
+    }
+  }
+
+  // ─── Play Button ──────────────────────────────────────────────────────────────
+  function updatePlayButton() {
+    const btn = document.getElementById('play-stop');
+    if (state.isPlaying) {
+      btn.textContent = '■ Stop';
+      btn.classList.add('playing');
+    } else {
+      btn.textContent = '▶ Start';
+      btn.classList.remove('playing');
+    }
+  }
+
+  document.getElementById('play-stop').addEventListener('click', togglePlay);
+
+  // Spacebar shortcut
+  document.addEventListener('keydown', e => {
+    if (e.code === 'Space' && document.activeElement !== bpmEl) {
+      e.preventDefault();
+      togglePlay();
+    }
+  });
+
+  // ─── Init ─────────────────────────────────────────────────────────────────────
+  function init() {
+    state.beats = Array(state.beatsPerMeasure).fill('normal');
+    state.beats[0] = 'accent';
+    renderBeatGrid();
+    renderSubDots();
+  }
+
+  init();
+</script>
+</body>
+</html>
